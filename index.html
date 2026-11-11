@@ -93,7 +93,7 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;perspective:1100px}
 .card{position:relative;border-radius:26px;padding:26px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);transition:transform .2s,border-color .3s;transform-style:preserve-3d;overflow:hidden}
 .card::before{content:"";position:absolute;inset:0;opacity:.14;background:var(--g);pointer-events:none}
-.card::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:26px solid var(--c);opacity:.14}
+.card::after{pointer-events:none;content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:26px solid var(--c);opacity:.14}
 .card.A{--c:var(--a);--g:linear-gradient(135deg,var(--a),transparent 60%)}
 .card.B{--c:var(--b);--g:linear-gradient(135deg,var(--b),transparent 60%)}
 .card.read{border-color:var(--c)}
@@ -108,7 +108,13 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-
 .rd input{width:18px;height:18px;accent-color:var(--c)}
 .vote{width:100%;padding:15px;border-radius:14px;border:0;font:700 16px var(--hf);color:#fff;background:var(--c);box-shadow:0 12px 26px -8px var(--c);transition:.25s}
 .vote:hover:not(:disabled){transform:translateY(-3px)}
-.vote:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;filter:grayscale(.5)}
+.vote.soft{opacity:.6;box-shadow:none}
+.vote:disabled{opacity:.4;cursor:not-allowed}
+.why{min-height:18px;margin-top:10px;font-size:13px;color:var(--mute);text-align:center}
+.why.ok{color:var(--ok)}
+.rd.need{border:1px solid var(--err);background:rgba(255,107,139,.1);animation:shake .45s}
+.fld.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .card.B .vote{color:#04332d}
 
 /* results */
@@ -213,7 +219,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
     <p class="sub">Wajib diisi sebelum memilih. Satu NIM hanya bisa memilih satu kali.</p>
     <div class="form">
       <div class="fld" id="fn"><label for="nama">Nama lengkap</label><input id="nama" autocomplete="name" placeholder="Contoh: Siti Aisyah Putri"><small></small></div>
-      <div class="fld" id="fm"><label for="nim">NIM</label><input id="nim" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="Contoh: 23012345"><small></small></div>
+      <div class="fld" id="fm"><label for="nim">NIM</label><input id="nim" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="Contoh: 2201234567"><small></small></div>
     </div>
   </div>
 
@@ -230,7 +236,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
         <dt>Cocok untukmu jika</dt><dd>Kamu suka membaca, menganalisis, dan menuangkan ide dalam tulisan.</dd>
       </dl>
       <label class="rd"><input type="checkbox" class="chk"> Saya sudah membaca penjelasan ini</label>
-      <button class="vote" disabled>Pilih Book Chapter</button>
+      <button class="vote soft" type="button">Pilih Book Chapter</button><p class="why"></p>
     </article>
 
     <article class="card B" data-k="Digital Product">
@@ -243,7 +249,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
         <dt>Cocok untukmu jika</dt><dd>Kamu suka praktik langsung, kreatif, dan senang membuat sesuatu yang terlihat hasilnya.</dd>
       </dl>
       <label class="rd"><input type="checkbox" class="chk"> Saya sudah membaca penjelasan ini</label>
-      <button class="vote" disabled>Pilih Digital Product</button>
+      <button class="vote soft" type="button">Pilih Digital Product</button><p class="why"></p>
     </article>
   </div>
 </section>
@@ -265,7 +271,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
   </div>
   <div class="tbl"><table><thead><tr><th>#</th><th>Nama lengkap</th><th>NIM</th><th>Pilihan</th><th>Waktu</th></tr></thead><tbody id="tb"></tbody></table><div class="empty" id="emp" style="display:none">Belum ada data yang cocok.</div></div>
 </section>
-<footer>Data tersimpan otomatis di Google Sheets · diperbarui tiap 20 detik</footer>
+<footer>Data tersimpan otomatis dan diperbarui tiap 20 detik</footer>
 </div>
 
 <div class="modal" id="modal"><div class="mbox"><h3>Yakin dengan pilihanmu?</h3><p id="mTxt"></p><div class="row"><button id="mNo">Batal</button><button class="go" id="mYes">Ya, kirim</button></div></div></div>
@@ -443,13 +449,23 @@ function check(){
   $('#fn').classList.toggle('bad',nama.value&&!okName());$('#fn small').textContent=nama.value&&!okName()?'Nama minimal 3 karakter.':'';
   $('#fm').classList.toggle('bad',nim.value&&!okNim());$('#fm small').textContent=nim.value&&!okNim()?'NIM berupa angka, 5–20 digit.':'';
   $('#s1').classList.toggle('done',idOk);$('#s2').classList.toggle('done',reads);$('#s3').classList.toggle('done',S.voted);
-  $$('.vote').forEach(v=>v.disabled=!(idOk&&reads)||S.voted);
+  const miss=[];if(!okName())miss.push('nama');if(!okNim())miss.push('NIM');if(!reads)miss.push('centang "sudah membaca" di kedua opsi');
+  const ready=!miss.length;
+  $$('.vote').forEach(v=>{v.disabled=S.voted;v.classList.toggle('soft',!ready)});
+  $$('.why').forEach(w=>{w.className='why'+(ready?' ok':'');w.textContent=ready?'Semua siap. Silakan pilih.':'Lengkapi dulu: '+miss.join(', ')+'.'});
+  $$('.rd').forEach(r=>{if(r.querySelector('.chk').checked)r.classList.remove('need')});
   $$('.card').forEach((c,i)=>c.classList.toggle('read',c.querySelector('.chk').checked));
 }
 $$('.chk').forEach(c=>c.addEventListener('change',check));
 
 let pending=null;
+function goto(el){el.scrollIntoView({behavior:'smooth',block:'center'})}
 $$('.vote').forEach(btn=>btn.onclick=()=>{
+  if(S.voted)return;
+  if(!okName()){const f=$('#fn');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');$('#fn small').textContent='Isi nama lengkap (minimal 3 karakter).';goto(f);nama.focus({preventScroll:true});return toast('Isi nama lengkap dulu.',true)}
+  if(!okNim()){const f=$('#fm');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');$('#fm small').textContent='Isi NIM dengan angka (5–20 digit).';goto(f);nim.focus({preventScroll:true});return toast('Isi NIM dulu.',true)}
+  const un=$$('.rd').filter(r=>!r.querySelector('.chk').checked);
+  if(un.length){un.forEach(r=>{r.classList.remove('need');void r.offsetWidth;r.classList.add('need')});return toast('Centang "Saya sudah membaca" pada kedua opsi dulu.',true)}
   pending=btn.closest('.card').dataset.k;
   $('#mTxt').innerHTML=`<b>${esc(nama.value.trim())}</b> (${esc(nim.value)}) akan memilih <b>${pending}</b>. Pilihan tidak bisa diubah setelah dikirim.`;
   $('#modal').classList.add('on');
