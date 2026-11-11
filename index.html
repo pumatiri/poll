@@ -271,7 +271,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
   </div>
   <div class="tbl"><table><thead><tr><th>#</th><th>Nama lengkap</th><th>NIM</th><th>Pilihan</th><th>Waktu</th></tr></thead><tbody id="tb"></tbody></table><div class="empty" id="emp" style="display:none">Belum ada data yang cocok.</div></div>
 </section>
-<footer>Data tersimpan otomatis dan diperbarui tiap 20 detik</footer>
+<footer>Data tersimpan otomatis dan diperbarui tiap 20 detik.</footer>
 </div>
 
 <div class="modal" id="modal"><div class="mbox"><h3>Yakin dengan pilihanmu?</h3><p id="mTxt"></p><div class="row"><button id="mNo">Batal</button><button class="go" id="mYes">Ya, kirim</button></div></div></div>
@@ -280,7 +280,9 @@ footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const KEYS=['Book Chapter','Digital Product'];
+var scene3d=null;
 const S={a:0,b:0,total:0,rows:[],voted:false};
+window.addEventListener('error',e=>{try{toast('Error halaman: '+e.message,true)}catch(_){}});
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* ====== KONFIGURASI: URL Web App Google Apps Script ====== */
 const API_URL='https://script.google.com/macros/s/AKfycbybGG4JnKJGml3aQmEHgR3U6mdkSsnAaRkzbQevCpwQY672veufLN96n-VZev9P4edT/exec';
@@ -289,7 +291,9 @@ async function api(params){
   try{
     const res=await fetch(API_URL+'?'+new URLSearchParams(Object.assign({_:Date.now()},params)),{redirect:'follow',signal:ctl.signal});
     if(!res.ok)throw new Error('Server merespons '+res.status);
-    return await res.json();
+    const txt=await res.text();let j;
+    try{j=JSON.parse(txt)}catch(_){throw new Error('Backend belum diperbarui atau akses belum "Anyone". Deploy ulang Code.gs sebagai New version.')}
+    return j;
   }catch(e){
     throw new Error(e.name==='AbortError'?'Koneksi terlalu lama. Coba lagi.':(e.message==='Failed to fetch'?'Tidak dapat terhubung ke server. Periksa internet atau deployment GAS.':e.message));
   }finally{clearTimeout(tm)}
@@ -316,7 +320,6 @@ document.addEventListener('fullscreenchange',()=>{
 });
 
 /* ---------- 3D SCENE ---------- */
-let scene3d;
 function initScene(){
   if(typeof THREE==='undefined'){$('#stage').insertAdjacentHTML('beforeend','<div class="empty">3D tidak dapat dimuat.</div>');return}
   const el=$('#stage'),R=new THREE.WebGLRenderer({antialias:true,alpha:true});
@@ -396,7 +399,7 @@ function initScene(){
   scene3d={A,B,pm,amb,p1,p2};
 }
 function applySceneTheme(){
-  if(!scene3d)return;const l=root.dataset.theme==='light';
+  if(typeof scene3d==='undefined'||!scene3d)return;const l=root.dataset.theme==='light';
   scene3d.pm.color.set(l?0x6d47f5:0xffffff);scene3d.pm.opacity=l?.55:.8;
   scene3d.amb.intensity=l?1.05:.75;
 }
@@ -478,7 +481,7 @@ $('#mYes').onclick=async()=>{
     const r=await run('submitVote',{nama:nama.value,nim:nim.value,pilihan:pending});
     $('#modal').classList.remove('on');
     if(r.ok){S.voted=true;ls.set('voted_nim',nim.value);applyData(r,pending);finish(r.msg);boom()}
-    else toast(r.msg,true);
+    else toast(r.msg||'Gagal menyimpan suara.',true);
   }catch(e){toast(e.message||'Gagal mengirim. Coba lagi.',true)}
   y.disabled=false;y.textContent='Ya, kirim';
 };
