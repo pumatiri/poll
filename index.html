@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polling Tugas Akhir: Book Chapter atau Digital Product</title>
+<meta name="description" content="Polling mahasiswa untuk memilih jalur tugas akhir: Book Chapter atau Digital Product.">
+<meta name="theme-color" content="#0a0e24">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 4 9l12 6 12-6-12-6Z' fill='%238b6bff'/%3E%3Cpath d='m4 16 12 6 12-6' stroke='%2313e0c6' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --bg1:#0a0e24;--bg2:#161a3d;--ink:#eef0ff;--mute:#9aa0c9;
+  --glass:rgba(255,255,255,.06);--line:rgba(255,255,255,.12);--shadow:0 20px 50px rgba(0,0,0,.35);
+  --a:#8b6bff;--a2:#c4b5ff;--b:#13e0c6;--b2:#9ff5e8;--ok:#3ddc97;--err:#ff6b8b;
+  --r:22px;--hf:'Sora',system-ui,sans-serif;--bf:'Inter',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg1:#eef2ff;--bg2:#fdf2ff;--ink:#1b1f3b;--mute:#5d6391;
+  --glass:rgba(255,255,255,.65);--line:rgba(60,60,130,.14);--shadow:0 18px 40px rgba(80,70,160,.16);
+  --a:#6d47f5;--a2:#5b3bd6;--b:#00b8a3;--b2:#007f70;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--bf);color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2));min-height:100vh;overflow-x:hidden;transition:background .6s,color .4s}
+h1,h2,h3{font-family:var(--hf);letter-spacing:-.02em}
+button{font:inherit;color:inherit;cursor:pointer}
+.blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.35;z-index:0;pointer-events:none;animation:float 16s ease-in-out infinite}
+.b1{width:420px;height:420px;background:var(--a);top:-120px;left:-100px}
+.b2{width:380px;height:380px;background:var(--b);bottom:-120px;right:-80px;animation-delay:-6s}
+:root[data-theme="light"] .blob{opacity:.28}
+@keyframes float{50%{transform:translate(40px,30px) scale(1.1)}}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:26px 26px}
+.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 18px 60px}
+
+/* header */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;margin:0 -18px;
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--hf);font-weight:800}
+.brand svg{width:30px;height:30px}
+.brand small{display:block;font:500 11px var(--bf);color:var(--mute)}
+.tools{display:flex;align-items:center;gap:8px}
+.ibtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--glass);display:grid;place-items:center;transition:.25s}
+.ibtn:hover{transform:translateY(-2px);border-color:var(--a)}
+.ibtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ibtn.spin svg{animation:spin .8s linear}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sw{position:relative;width:62px;height:34px;border-radius:99px;border:1px solid var(--line);background:linear-gradient(90deg,#1c2150,#3a2f8f);cursor:pointer;transition:.4s;flex:none}
+:root[data-theme="light"] .sw{background:linear-gradient(90deg,#ffd77a,#ffb86b)}
+.sw input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0;width:100%;height:100%;z-index:2}
+.knob{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;display:grid;place-items:center;transition:transform .4s cubic-bezier(.5,1.6,.5,1);box-shadow:0 3px 8px rgba(0,0,0,.3)}
+:root[data-theme="light"] .knob{transform:translateX(28px)}
+.knob svg{width:15px;height:15px}
+.sun{display:none}:root[data-theme="light"] .sun{display:block}:root[data-theme="light"] .moon{display:none}
+.sw:focus-within{outline:2px solid var(--a);outline-offset:2px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 1.25fr;gap:24px;align-items:center;padding:34px 0 10px}
+.hero h1{font-size:clamp(30px,5vw,52px);line-height:1.05;font-weight:800}
+.grad{background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mute);margin:16px 0 22px;line-height:1.65;max-width:46ch}
+.cta{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:14px;border:0;font-weight:600;color:#fff;background:linear-gradient(90deg,var(--a),var(--b));box-shadow:0 10px 26px rgba(109,71,245,.4);text-decoration:none;transition:.25s}
+.cta:hover{transform:translateY(-3px) scale(1.02)}
+#stage{position:relative;height:430px;border-radius:30px;border:1px solid var(--line);background:radial-gradient(ellipse at 50% 100%,rgba(139,107,255,.22),transparent 65%),var(--glass);overflow:hidden;box-shadow:var(--shadow);touch-action:pan-y}
+#stage canvas{display:block;width:100%;height:100%}
+.tag{position:absolute;bottom:14px;padding:8px 14px;border-radius:14px;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--line);font:600 13px var(--hf);text-align:center}
+.tag b{display:block;font-size:20px}
+.tag.l{left:5%}.tag.r{right:5%}
+.tag.l b{color:var(--a2)}.tag.r b{color:var(--b)}
+:root[data-theme="light"] .tag.r b{color:var(--b2)}
+.hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--mute);white-space:nowrap}
+
+/* steps */
+.steps{display:flex;gap:10px;margin:36px 0 18px;flex-wrap:wrap}
+.chip{flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--glass);font-size:14px;font-weight:500;transition:.4s}
+.chip i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--hf);background:var(--line)}
+.chip.done{border-color:var(--ok)}.chip.done i{background:var(--ok);color:#06241a}
+.chip.done i::before{content:"✓"}.chip.done i span{display:none}
+
+.panel{border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.panel h2{font-size:20px;margin-bottom:4px}.panel .sub{color:var(--mute);font-size:14px;margin-bottom:16px}
+.form{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.fld label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.fld input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(127,127,170,.1);color:var(--ink);font:500 15px var(--bf);outline:0;transition:.25s}
+.fld input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(139,107,255,.2)}
+.fld.bad input{border-color:var(--err)}
+.fld small{display:block;min-height:16px;margin-top:4px;color:var(--err);font-size:12px}
+
+/* option cards */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;perspective:1100px}
+.card{position:relative;border-radius:26px;padding:26px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);transition:transform .2s,border-color .3s;transform-style:preserve-3d;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;opacity:.14;background:var(--g);pointer-events:none}
+.card::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:26px solid var(--c);opacity:.14}
+.card.A{--c:var(--a);--g:linear-gradient(135deg,var(--a),transparent 60%)}
+.card.B{--c:var(--b);--g:linear-gradient(135deg,var(--b),transparent 60%)}
+.card.read{border-color:var(--c)}
+.ico{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:var(--c);color:#fff;box-shadow:0 10px 24px -6px var(--c);transform:translateZ(40px)}
+.ico svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:24px;margin:16px 0 6px;transform:translateZ(24px)}
+.card .lead{color:var(--mute);line-height:1.6;font-size:15px}
+.card dl{margin:16px 0}
+.card dt{font:700 13px var(--hf);color:var(--c);margin-top:12px}
+.card dd{font-size:14px;line-height:1.55;margin-top:2px}
+.rd{display:flex;align-items:center;gap:10px;margin:14px 0;padding:11px 13px;border-radius:12px;border:1px dashed var(--line);font-size:14px;cursor:pointer;user-select:none}
+.rd input{width:18px;height:18px;accent-color:var(--c)}
+.vote{width:100%;padding:15px;border-radius:14px;border:0;font:700 16px var(--hf);color:#fff;background:var(--c);box-shadow:0 12px 26px -8px var(--c);transition:.25s}
+.vote:hover:not(:disabled){transform:translateY(-3px)}
+.vote:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;filter:grayscale(.5)}
+.card.B .vote{color:#04332d}
+
+/* results */
+.sec-t{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:48px 0 16px;flex-wrap:wrap}
+.sec-t h2{font-size:28px}.sec-t span{color:var(--mute);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{padding:18px;border-radius:18px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(12px)}
+.stat small{color:var(--mute);font-size:13px}.stat b{display:block;font:800 32px var(--hf);margin-top:4px}
+.stat.s1 b{color:var(--a2)}.stat.s2 b{color:var(--b)}
+:root[data-theme="light"] .stat.s2 b{color:var(--b2)}
+.bar{display:flex;height:46px;border-radius:16px;overflow:hidden;margin:16px 0;border:1px solid var(--line);background:var(--glass)}
+.bar div{display:grid;place-items:center;font:700 14px var(--hf);color:#fff;width:0;transition:width 1.2s cubic-bezier(.2,.9,.2,1);white-space:nowrap;overflow:hidden}
+.bar .fa{background:linear-gradient(90deg,#6d47f5,#8b6bff)}.bar .fb{background:linear-gradient(90deg,#0fcfb6,#13e0c6);color:#04332d}
+.tools2{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.tools2 input,.tools2 select{padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--glass);color:var(--ink);font:500 14px var(--bf);outline:0}
+.tools2 input{flex:1;min-width:180px}.tools2 input:focus,.tools2 select:focus{border-color:var(--a)}
+.tools2 option{color:#111}
+.tbl{overflow:auto;max-height:440px;border-radius:16px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th{position:sticky;top:0;text-align:left;padding:12px 14px;background:var(--bg2);font:700 13px var(--hf)}
+td{padding:11px 14px;border-top:1px solid var(--line)}
+tbody tr{animation:rowin .4s both}
+tbody tr:hover{background:rgba(127,127,190,.12)}
+@keyframes rowin{from{opacity:0;transform:translateX(-10px)}}
+.badge{display:inline-block;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:700}
+.badge.A{background:rgba(139,107,255,.2);color:var(--a2)}.badge.B{background:rgba(19,224,198,.18);color:var(--b)}
+:root[data-theme="light"] .badge.B{color:var(--b2)}
+.empty{padding:34px;text-align:center;color:var(--mute)}
+footer{text-align:center;color:var(--mute);font-size:13px;margin-top:40px}
+
+/* toast + modal + confetti */
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);z-index:60;padding:13px 20px;border-radius:14px;background:#1b1f3b;color:#fff;font-weight:500;box-shadow:var(--shadow);transition:.4s cubic-bezier(.2,1.2,.3,1);max-width:90vw;text-align:center;border-left:5px solid var(--ok)}
+#toast.show{transform:translate(-50%,0)}#toast.err{border-color:var(--err)}
+.modal{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:rgba(5,8,25,.6);backdrop-filter:blur(6px);padding:18px}
+.modal.on{display:grid}
+.mbox{width:min(420px,100%);padding:26px;border-radius:24px;background:var(--bg2);border:1px solid var(--line);box-shadow:var(--shadow);animation:pop .35s cubic-bezier(.2,1.3,.3,1);text-align:center}
+.mbox h3{font-size:22px;margin-bottom:8px}.mbox p{color:var(--mute);line-height:1.6;margin-bottom:18px}
+.mbox .row{display:flex;gap:10px}.mbox .row button{flex:1;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--glass);font-weight:600}
+.mbox .row .go{background:linear-gradient(90deg,var(--a),var(--b));border:0;color:#fff}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.cf{position:fixed;top:-12px;width:10px;height:14px;z-index:70;pointer-events:none;animation:fall var(--t) ease-in forwards}
+@keyframes fall{to{transform:translate(var(--x),105vh) rotate(720deg);opacity:.9}}
+.done-msg{display:none;text-align:center;padding:28px}
+.done-msg.on{display:block;animation:pop .5s both}
+.done-msg .big{font-size:46px}
+:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+
+@media(max-width:860px){
+  .hero{grid-template-columns:1fr}.hero{padding-top:20px}
+  #stage{height:360px;order:-1}
+  .opts{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}
+  .brand small{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+
+<div class="wrap">
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M16 3 4 9l12 6 12-6-12-6Z" stroke="#8b6bff"/><path d="m4 16 12 6 12-6" stroke="#13e0c6"/><path d="m4 23 12 6 12-6" stroke="#8b6bff"/></svg>
+    <div>Polling Tugas Akhir<small>Pilih jalurmu, lihat hasilnya langsung</small></div>
+  </div>
+  <div class="tools">
+    <button class="ibtn" id="bRefresh" title="Segarkan data" aria-label="Segarkan data"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></button>
+    <button class="ibtn" id="bFull" title="Layar penuh" aria-label="Layar penuh"><svg viewBox="0 0 24 24" id="icFull"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <label class="sw" title="Mode gelap / terang">
+      <input type="checkbox" id="tg" aria-label="Ganti mode gelap atau terang">
+      <span class="knob">
+        <svg class="moon" viewBox="0 0 24 24" fill="#3a2f8f"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10Z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="#f59e0b"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
+      </span>
+    </label>
+  </div>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>Tugas akhirmu, <span class="grad">pilihanmu.</span></h1>
+    <p>Pilih satu dari dua jalur: menulis <b>Book Chapter</b> atau membuat <b>Digital Product</b>. Isi identitas, baca penjelasan keduanya, lalu beri suaramu. Grafik 3D di samping bergerak naik setiap ada suara baru.</p>
+    <a class="cta" href="#vote">Mulai memilih
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+  <div id="stage">
+    <div class="hint">Geser kursor atau jari untuk memutar</div>
+    <div class="tag l"><b id="tagA">0</b>Book Chapter</div>
+    <div class="tag r"><b id="tagB">0</b>Digital Product</div>
+  </div>
+</section>
+
+<section id="vote">
+  <div class="steps">
+    <div class="chip" id="s1"><i><span>1</span></i>Isi identitas</div>
+    <div class="chip" id="s2"><i><span>2</span></i>Baca kedua opsi</div>
+    <div class="chip" id="s3"><i><span>3</span></i>Beri suara</div>
+  </div>
+
+  <div class="panel" id="formPanel">
+    <h2>Identitas mahasiswa</h2>
+    <p class="sub">Wajib diisi sebelum memilih. Satu NIM hanya bisa memilih satu kali.</p>
+    <div class="form">
+      <div class="fld" id="fn"><label for="nama">Nama lengkap</label><input id="nama" autocomplete="name" placeholder="Contoh: Siti Aisyah Putri"><small></small></div>
+      <div class="fld" id="fm"><label for="nim">NIM</label><input id="nim" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="Contoh: 2201234567"><small></small></div>
+    </div>
+  </div>
+
+  <div class="panel done-msg" id="doneMsg"><div class="big">🎉</div><h2 id="doneT">Terima kasih!</h2><p class="sub" style="margin:6px 0 0">Suaramu sudah tercatat. Lihat hasil lengkap di bawah.</p></div>
+
+  <div class="opts" id="opts">
+    <article class="card A" data-k="Book Chapter">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 21.5A2.5 2.5 0 0 1 6.5 19H20M9 8h7M9 12h5"/></svg></div>
+      <h3>Book Chapter</h3>
+      <p class="lead">Kamu menulis satu bab buku ilmiah tentang topik yang kamu kuasai, lalu bab-bab mahasiswa dikumpulkan menjadi satu buku.</p>
+      <dl>
+        <dt>Yang dikerjakan</dt><dd>Memilih topik, mencari referensi, lalu menulis bab dengan alur jelas: pendahuluan, pembahasan, kesimpulan, dan daftar pustaka.</dd>
+        <dt>Hasil akhir</dt><dd>Naskah satu bab yang rapi dan siap digabung menjadi buku.</dd>
+        <dt>Cocok untukmu jika</dt><dd>Kamu suka membaca, menganalisis, dan menuangkan ide dalam tulisan.</dd>
+      </dl>
+      <label class="rd"><input type="checkbox" class="chk"> Saya sudah membaca penjelasan ini</label>
+      <button class="vote" disabled>Pilih Book Chapter</button>
+    </article>
+
+    <article class="card B" data-k="Digital Product">
+      <div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M9 9l-2 2 2 2M15 9l2 2-2 2"/></svg></div>
+      <h3>Digital Product</h3>
+      <p class="lead">Kamu membuat karya digital yang bisa dipakai langsung, seperti aplikasi, website, video, e-modul, atau media interaktif.</p>
+      <dl>
+        <dt>Yang dikerjakan</dt><dd>Menentukan masalah yang ingin diselesaikan, merancang produk, membuatnya, mengujinya ke pengguna, lalu mendokumentasikannya.</dd>
+        <dt>Hasil akhir</dt><dd>Produk digital yang berfungsi, dilengkapi dokumentasi singkat dan demo.</dd>
+        <dt>Cocok untukmu jika</dt><dd>Kamu suka praktik langsung, kreatif, dan senang membuat sesuatu yang terlihat hasilnya.</dd>
+      </dl>
+      <label class="rd"><input type="checkbox" class="chk"> Saya sudah membaca penjelasan ini</label>
+      <button class="vote" disabled>Pilih Digital Product</button>
+    </article>
+  </div>
+</section>
+
+<section id="hasil">
+  <div class="sec-t"><h2>Hasil polling</h2><span id="upd">Memuat data…</span></div>
+  <div class="stats">
+    <div class="stat"><small>Total suara</small><b id="stT">0</b></div>
+    <div class="stat s1"><small>Book Chapter</small><b id="stA">0</b></div>
+    <div class="stat s2"><small>Digital Product</small><b id="stB">0</b></div>
+    <div class="stat"><small>Sementara unggul</small><b id="stL" style="font-size:20px;padding-top:9px">–</b></div>
+  </div>
+  <div class="bar" aria-label="Perbandingan suara"><div class="fa" id="barA"></div><div class="fb" id="barB"></div></div>
+
+  <div class="sec-t" style="margin-top:30px"><h2 style="font-size:22px">Rincian pemilih</h2><span id="cnt"></span></div>
+  <div class="tools2">
+    <input id="q" placeholder="Cari nama atau NIM…" aria-label="Cari">
+    <select id="f" aria-label="Filter pilihan"><option value="">Semua pilihan</option><option>Book Chapter</option><option>Digital Product</option></select>
+  </div>
+  <div class="tbl"><table><thead><tr><th>#</th><th>Nama lengkap</th><th>NIM</th><th>Pilihan</th><th>Waktu</th></tr></thead><tbody id="tb"></tbody></table><div class="empty" id="emp" style="display:none">Belum ada data yang cocok.</div></div>
+</section>
+<footer>Data tersimpan otomatis di Google Sheets · diperbarui tiap 20 detik</footer>
+</div>
+
+<div class="modal" id="modal"><div class="mbox"><h3>Yakin dengan pilihanmu?</h3><p id="mTxt"></p><div class="row"><button id="mNo">Batal</button><button class="go" id="mYes">Ya, kirim</button></div></div></div>
+<div id="toast" role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const KEYS=['Book Chapter','Digital Product'];
+const S={a:0,b:0,total:0,rows:[],voted:false};
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ====== KONFIGURASI: URL Web App Google Apps Script ====== */
+const API_URL='https://script.google.com/macros/s/AKfycbybGG4JnKJGml3aQmEHgR3U6mdkSsnAaRkzbQevCpwQY672veufLN96n-VZev9P4edT/exec';
+async function api(params){
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),30000);
+  try{
+    const res=await fetch(API_URL+'?'+new URLSearchParams(Object.assign({_:Date.now()},params)),{redirect:'follow',signal:ctl.signal});
+    if(!res.ok)throw new Error('Server merespons '+res.status);
+    return await res.json();
+  }catch(e){
+    throw new Error(e.name==='AbortError'?'Koneksi terlalu lama. Coba lagi.':(e.message==='Failed to fetch'?'Tidak dapat terhubung ke server. Periksa internet atau deployment GAS.':e.message));
+  }finally{clearTimeout(tm)}
+}
+const run=(fn,p)=>fn==='getResults'?api({action:'results'}):api(Object.assign({action:'vote'},p));
+function toast(m,err){const t=$('#toast');t.textContent=m;t.className='show'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>t.className='',3800)}
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- THEME ---------- */
+const root=document.documentElement,tg=$('#tg');
+function setTheme(t){root.dataset.theme=t;tg.checked=t==='light';ls.set('theme',t);if(window.applySceneTheme)applySceneTheme()}
+tg.addEventListener('change',()=>setTheme(tg.checked?'light':'dark'));
+setTheme(ls.get('theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+
+/* ---------- FULLSCREEN ---------- */
+$('#bFull').onclick=async()=>{
+  try{
+    if(document.fullscreenElement)await document.exitFullscreen();
+    else await root.requestFullscreen();
+  }catch(e){toast('Browser ini tidak mendukung layar penuh.',true)}
+};
+document.addEventListener('fullscreenchange',()=>{
+  $('#icFull').innerHTML=document.fullscreenElement?'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>':'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
+});
+
+/* ---------- 3D SCENE ---------- */
+let scene3d;
+function initScene(){
+  if(typeof THREE==='undefined'){$('#stage').insertAdjacentHTML('beforeend','<div class="empty">3D tidak dapat dimuat.</div>');return}
+  const el=$('#stage'),R=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  R.setPixelRatio(Math.min(devicePixelRatio,2));el.prepend(R.domElement);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,.1,100);
+  const amb=new THREE.AmbientLight(0xffffff,.75),dl=new THREE.DirectionalLight(0xffffff,.9);dl.position.set(4,9,6);
+  const p1=new THREE.PointLight(0x8b6bff,1.4,22);p1.position.set(-5,3,4);
+  const p2=new THREE.PointLight(0x13e0c6,1.4,22);p2.position.set(5,3,4);
+  sc.add(amb,dl,p1,p2);
+  const world=new THREE.Group();sc.add(world);
+  const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,metalness:.35,roughness:.3},o));
+
+  function makeCol(color,x,top){
+    const g=new THREE.Group();g.position.x=x;
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.65,.25,48),M(color,{metalness:.6,roughness:.4}));base.position.y=.12;
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.25,.035,12,72),new THREE.MeshBasicMaterial({color}));ring.rotation.x=Math.PI/2;ring.position.y=.3;
+    const geo=new THREE.CylinderGeometry(.95,.95,1,48);geo.translate(0,.5,0);
+    const pil=new THREE.Mesh(geo,M(color,{emissive:color,emissiveIntensity:.25,transparent:true,opacity:.92}));pil.position.y=.25;
+    const topG=new THREE.Group();topG.add(top);
+    g.add(base,ring,pil,topG);world.add(g);
+    return{g,pil,ring,topG,h:.35,target:.35,pulse:0};
+  }
+  // Buku
+  const book=new THREE.Group(),cv=M(0x8b6bff,{metalness:.2});
+  const c1=new THREE.Mesh(new THREE.BoxGeometry(1.3,.14,1.75),cv),c2=c1.clone(),pg=new THREE.Mesh(new THREE.BoxGeometry(1.2,.3,1.65),M(0xf5f3ff,{metalness:0,roughness:.8}));
+  c1.position.y=-.22;c2.position.y=.22;const sp=new THREE.Mesh(new THREE.BoxGeometry(.14,.58,1.75),cv);sp.position.x=-.6;
+  book.add(c1,c2,pg,sp);book.rotation.z=.2;
+  // Produk digital
+  const dig=new THREE.Group();
+  dig.add(new THREE.Mesh(new THREE.IcosahedronGeometry(.62,0),M(0x13e0c6,{flatShading:true,emissive:0x13e0c6,emissiveIntensity:.3})));
+  dig.add(new THREE.Mesh(new THREE.IcosahedronGeometry(.98,1),new THREE.MeshBasicMaterial({color:0x13e0c6,wireframe:true,transparent:true,opacity:.55})));
+  const A=makeCol(0x8b6bff,-2.6,book),B=makeCol(0x13e0c6,2.6,dig);
+
+  // Partikel
+  const N=450,pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*22;pos[i*3+1]=Math.random()*11-1;pos[i*3+2]=(Math.random()-.5)*14-2}
+  const pg2=new THREE.BufferGeometry();pg2.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const pm=new THREE.PointsMaterial({size:.07,transparent:true,opacity:.8,color:0xffffff});
+  const pts=new THREE.Points(pg2,pm);sc.add(pts);
+
+  function size(){
+    const w=el.clientWidth,h=el.clientHeight;R.setSize(w,h);cam.aspect=w/h;
+    cam.position.set(0,3.4,Math.max(11,10.5/Math.min(cam.aspect,1.6)));cam.lookAt(0,2.3,0);cam.updateProjectionMatrix();
+  }
+  new ResizeObserver(size).observe(el);size();
+
+  let tx=0,ty=0,drag=false,lx=0,rot=0;
+  el.addEventListener('pointermove',e=>{
+    const r=el.getBoundingClientRect();tx=((e.clientX-r.left)/r.width-.5)*2;ty=((e.clientY-r.top)/r.height-.5)*2;
+    if(drag){rot+=(e.clientX-lx)*.008;lx=e.clientX}
+  });
+  el.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX});
+  addEventListener('pointerup',()=>drag=false);
+  el.addEventListener('pointerleave',()=>{tx=ty=0});
+
+  const clock=new THREE.Clock();
+  (function loop(){
+    requestAnimationFrame(loop);
+    const t=clock.getElapsedTime();
+    world.rotation.y+=(tx*.35+rot-world.rotation.y)*.06;
+    world.rotation.x+=(ty*.08-world.rotation.x)*.06;
+    [A,B].forEach((c,i)=>{
+      c.h+=(c.target-c.h)*.05;
+      c.pulse*=.92;
+      const s=1+c.pulse*.15;
+      c.pil.scale.set(s,c.h,s);
+      c.topG.position.y=.25+c.h+1.05+Math.sin(t*1.6+i)*.12;
+      c.topG.rotation.y=t*.8+i;
+      c.ring.rotation.z=t*.5*(i?-1:1);
+      c.ring.scale.setScalar(1+Math.sin(t*2+i)*.03);
+    });
+    dig.rotation.x=t*.4;
+    pts.rotation.y=t*.02;
+    R.render(sc,cam);
+  })();
+
+  scene3d={A,B,pm,amb,p1,p2};
+}
+function applySceneTheme(){
+  if(!scene3d)return;const l=root.dataset.theme==='light';
+  scene3d.pm.color.set(l?0x6d47f5:0xffffff);scene3d.pm.opacity=l?.55:.8;
+  scene3d.amb.intensity=l?1.05:.75;
+}
+function updateScene(pulseKey){
+  if(!scene3d)return;const tot=Math.max(S.total,1);
+  scene3d.A.target=.35+(S.a/tot)*3.3;scene3d.B.target=.35+(S.b/tot)*3.3;
+  if(pulseKey==='Book Chapter')scene3d.A.pulse=1;if(pulseKey==='Digital Product')scene3d.B.pulse=1;
+}
+
+/* ---------- RESULTS ---------- */
+function countTo(el,to){
+  const from=+el.dataset.v||0;el.dataset.v=to;if(from===to){el.textContent=to;return}
+  const t0=performance.now();(function f(n){const p=Math.min((n-t0)/700,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0);
+}
+function applyData(d,pulse){
+  S.a=d.counts[KEYS[0]]||0;S.b=d.counts[KEYS[1]]||0;S.total=d.total;S.rows=d.rows;
+  ['#stT','#tagA','#tagB','#stA','#stB'].forEach((id,i)=>countTo($(id),[S.total,S.a,S.b,S.a,S.b][i]));
+  const pa=S.total?S.a/S.total*100:0,pb=S.total?S.b/S.total*100:0;
+  $('#barA').style.width=pa+'%';$('#barB').style.width=pb+'%';
+  $('#barA').textContent=S.total&&pa>=12?`Book Chapter ${pa.toFixed(0)}%`:'';
+  $('#barB').textContent=S.total&&pb>=12?`Digital Product ${pb.toFixed(0)}%`:'';
+  $('#stL').textContent=!S.total?'–':S.a===S.b?'Seri':S.a>S.b?'Book Chapter':'Digital Product';
+  $('#upd').textContent='Diperbarui '+d.updated+' WIB';
+  renderTable();updateScene(pulse);
+}
+function renderTable(){
+  const q=$('#q').value.trim().toLowerCase(),f=$('#f').value;
+  const rows=S.rows.filter(r=>(!f||r.pilihan===f)&&(!q||r.nama.toLowerCase().includes(q)||r.nim.includes(q)));
+  const n=S.rows.length;
+  $('#tb').innerHTML=rows.map((r,i)=>`<tr style="animation-delay:${Math.min(i,15)*25}ms"><td>${n-S.rows.indexOf(r)}</td><td>${esc(r.nama)}</td><td>${esc(r.nim)}</td><td><span class="badge ${r.pilihan===KEYS[0]?'A':'B'}">${esc(r.pilihan)}</span></td><td>${esc(r.waktu)}</td></tr>`).join('');
+  $('#emp').style.display=rows.length?'none':'block';
+  $('#cnt').textContent=`Menampilkan ${rows.length} dari ${n} data`;
+}
+async function load(manual){
+  const b=$('#bRefresh');b.classList.add('spin');setTimeout(()=>b.classList.remove('spin'),850);
+  try{applyData(await run('getResults'));if(manual)toast('Data berhasil disegarkan')}
+  catch(e){$('#upd').textContent='Gagal memuat data';if(manual)toast(e.message||'Gagal memuat data',true)}
+}
+$('#bRefresh').onclick=()=>load(true);
+$('#q').oninput=renderTable;$('#f').onchange=renderTable;
+setInterval(()=>{if(!document.hidden)load()},20000);
+
+/* ---------- FORM & VOTE ---------- */
+const nama=$('#nama'),nim=$('#nim');
+nim.addEventListener('input',()=>{nim.value=nim.value.replace(/\D/g,'');check()});
+nama.addEventListener('input',check);
+const okName=()=>nama.value.trim().length>=3,okNim=()=>/^\d{5,20}$/.test(nim.value);
+function check(){
+  const reads=$$('.chk').every(c=>c.checked),idOk=okName()&&okNim();
+  $('#fn').classList.toggle('bad',nama.value&&!okName());$('#fn small').textContent=nama.value&&!okName()?'Nama minimal 3 karakter.':'';
+  $('#fm').classList.toggle('bad',nim.value&&!okNim());$('#fm small').textContent=nim.value&&!okNim()?'NIM berupa angka, 5–20 digit.':'';
+  $('#s1').classList.toggle('done',idOk);$('#s2').classList.toggle('done',reads);$('#s3').classList.toggle('done',S.voted);
+  $$('.vote').forEach(v=>v.disabled=!(idOk&&reads)||S.voted);
+  $$('.card').forEach((c,i)=>c.classList.toggle('read',c.querySelector('.chk').checked));
+}
+$$('.chk').forEach(c=>c.addEventListener('change',check));
+
+let pending=null;
+$$('.vote').forEach(btn=>btn.onclick=()=>{
+  pending=btn.closest('.card').dataset.k;
+  $('#mTxt').innerHTML=`<b>${esc(nama.value.trim())}</b> (${esc(nim.value)}) akan memilih <b>${pending}</b>. Pilihan tidak bisa diubah setelah dikirim.`;
+  $('#modal').classList.add('on');
+});
+$('#mNo').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')});
+$('#mYes').onclick=async()=>{
+  const y=$('#mYes');y.disabled=true;y.textContent='Mengirim…';
+  try{
+    const r=await run('submitVote',{nama:nama.value,nim:nim.value,pilihan:pending});
+    $('#modal').classList.remove('on');
+    if(r.ok){S.voted=true;ls.set('voted_nim',nim.value);applyData(r,pending);finish(r.msg);boom()}
+    else toast(r.msg,true);
+  }catch(e){toast(e.message||'Gagal mengirim. Coba lagi.',true)}
+  y.disabled=false;y.textContent='Ya, kirim';
+};
+function finish(msg){
+  $('#doneT').textContent=msg;$('#doneMsg').classList.add('on');
+  $('#formPanel').style.display='none';$('#opts').style.display='none';check();
+  setTimeout(()=>$('#hasil').scrollIntoView({behavior:'smooth'}),900);
+}
+function boom(){
+  const cols=['#8b6bff','#13e0c6','#ffd166','#ff6b8b','#fff'];
+  for(let i=0;i<70;i++){const d=document.createElement('div');d.className='cf';
+    d.style.cssText=`left:${Math.random()*100}vw;background:${cols[i%5]};--x:${(Math.random()-.5)*200}px;--t:${1.8+Math.random()*1.6}s;border-radius:${i%2?'50%':'2px'}`;
+    document.body.appendChild(d);setTimeout(()=>d.remove(),3600)}
+}
+
+/* tilt 3D pada kartu */
+$$('.card').forEach(c=>{
+  c.addEventListener('pointermove',e=>{
+    if(e.pointerType==='touch')return;const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform=`rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-4px)`;
+  });
+  c.addEventListener('pointerleave',()=>c.style.transform='');
+});
+
+initScene();applySceneTheme();check();load();
+if(ls.get('voted_nim')){$('#doneMsg').querySelector('p').textContent='Perangkat ini sudah pernah dipakai untuk memilih. Lihat hasil lengkap di bawah.'}
+</script>
+</body>
+</html>
